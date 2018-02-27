@@ -1,0 +1,13 @@
+.stone_wall_column{
+  box-sizing: border-box;
+  padding: 5px;
+  display: inline-block;
+  vertical-align: top;
+}
+.stone_wall_child{
+  width: 100%;
+  display: block;
+}
+.stone_wall_child + .stone_wall_child{
+  margin-top: 10px;
+}

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StoneWallLayout demo</title>
+  <style>
+    .stone_wall_column{
+      box-sizing: border-box;
+      padding: 5px;
+      display: inline-block;
+      vertical-align: top;
+    }
+    .stone_wall_child{
+      width: 100%;
+      display: block;
+    }
+    .stone_wall_child + .stone_wall_child{
+      margin-top: 10px;
+    }
+  </style>
+  <style>
+    .stone_wall_child{
+      font-size: 2rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="stone_wall">
+    <div class="stone_wall_child">child1</div>
+    <div class="stone_wall_child">child2</div>
+    <div class="stone_wall_child">child3</div>
+    <div class="stone_wall_child">child4</div>
+    <div class="stone_wall_child">child5</div>
+    <div class="stone_wall_child">child6</div>
+    <div class="stone_wall_child">child7</div>
+    <div class="stone_wall_child">child8</div>
+    <div class="stone_wall_child">child9</div>
+    <div class="stone_wall_child">child10</div>
+    <div class="stone_wall_child">child11</div>
+    <div class="stone_wall_child">child12</div>
+    <div class="stone_wall_child">child13</div>
+    <div class="stone_wall_child">child14</div>
+    <div class="stone_wall_child">child15</div>
+    <div class="stone_wall_child">child16</div>
+    <div class="stone_wall_child">child17</div>
+    <div class="stone_wall_child">child18</div>
+    <div class="stone_wall_child">child19</div>
+    <div class="stone_wall_child">child20</div>
+  </div>
+  <script>
+    window.addEventListener('load',function(){
+      var sw = new StoneWall('stone_wall',{
+        order: 'top',
+        columns:3
+      });
+    },false);
+
+    let StoneWall = function(class_name,prop){
+      prop = prop || {};
+      const target = class_name || 'stone_wall';
+      const sw_boxs = document.getElementsByClassName(target);
+      const columns = prop.columns || 3;
+      const order = prop.order || 'left';
+      Array.prototype.forEach.call(sw_boxs,function(sw_box){
+        for(let i=0;i<columns;i++){
+          let sw_column = document.createElement('div');
+          sw_column.setAttribute('class', target + '_column');
+          sw_column.style.width = 'calc(100%/' + columns + ')';
+          sw_box.insertBefore(sw_column, sw_box.firstChild);
+        }
+        let sw_columns = sw_box.getElementsByClassName(target + '_column')
+        let sw_children = sw_box.getElementsByClassName(target + '_child');
+        let now_column = 0;
+        let length = sw_box.children.length;
+
+        switch(order){
+          case 'left':
+            Array.prototype.forEach.call(sw_children,function(sw_child){
+              sw_child.style.height = Math.random()*300+100+'px'; //for demo
+              sw_child.style.backgroundColor = random_hsl(); //for demo
+              sw_columns[now_column].appendChild(sw_child);
+              (now_column>=columns-1)?now_column=0:now_column++;
+            });
+            break;
+          case 'top':
+            let now_height = new Array(columns);
+            for(let i=0;i<now_height.length;i++){now_height[i] = 0;}
+            Array.prototype.forEach.call(sw_children,function(sw_child){
+              let column_num = index_min(now_height);
+              sw_child.style.height = Math.random()*300+100+'px'; //for demo
+              sw_child.style.backgroundColor = random_hsl(); //for demo
+              sw_columns[column_num].appendChild(sw_child);
+              now_height[column_num] = sw_columns[column_num].clientHeight;
+            });
+            break;
+          default:
+            break;
+        }
+      });
+
+      function index_min(arr){
+        if(Array.isArray(arr)){
+          let min = arr[0];
+          arr.forEach(function(val){
+            if(val<min){min=val};
+          });
+          return arr.indexOf(min);
+        }else{
+          return undefined;
+        }
+      }
+    }
+
+    //for demo
+    function random_hsl(){
+      let h = Math.floor(Math.random()*361);
+      let s = Math.floor(Math.random()*(90-70+1)) + 70;
+      let l = Math.floor(Math.random()*(90-70+1)) + 70;
+      return 'hsl(' + h + ',' + s + '%,' + l + '%)';
+    }
+  </script>
+</body>
+</html>
