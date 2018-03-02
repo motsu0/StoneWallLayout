@@ -40,15 +40,24 @@ window.addEventListener('load',function(){
   });
 },false);
 ```
-#### Another way ( When you use jQuery )
+#### Another way ( When you use jQuery and order: 'left')
 ```
 $(document).ready(function(){
   var stonewall = new StoneWall('stone_wall',{
-    order: 'top',
+    order: 'left',
     columns:5
   });
 });
 ```
+### ※ Order type
+#### Left (Default)
+Each content lines up from left to right.
+#### Top
+Each content selects the lowest column currently.
+#### Level
+At first, each content selects own column so that all columns become same or near height.
+Second, each content lines up from top to bottom in own column.
+
 ### ※ Edit HTML and CSS File ( If Necessary )
 When you change class name "stone_wall" to "example", you must change others as below.
 #### HTML

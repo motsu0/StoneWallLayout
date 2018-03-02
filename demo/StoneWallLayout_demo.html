@@ -20,42 +20,120 @@
     }
   </style>
   <style>
-    .stone_wall_child{
-      font-size: 2rem;
+    body{
+      margin: 0;
+    }
+    #controller,#order,#columns{
+      font-size: 1.5rem;
+    }
+    #controller{
+      width: 100%;
+      position: fixed;
+      top: 30px;
       text-align: center;
+    }
+    .controll{
+      padding: 5px;
+      background-color: rgba(255, 255, 255, .75);
+    }
+    .stone_wall_child{
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    @media screen and (min-width:481px){
+      .controll{
+        display: inline-block;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="stone_wall">
-    <div class="stone_wall_child">child1</div>
-    <div class="stone_wall_child">child2</div>
-    <div class="stone_wall_child">child3</div>
-    <div class="stone_wall_child">child4</div>
-    <div class="stone_wall_child">child5</div>
-    <div class="stone_wall_child">child6</div>
-    <div class="stone_wall_child">child7</div>
-    <div class="stone_wall_child">child8</div>
-    <div class="stone_wall_child">child9</div>
-    <div class="stone_wall_child">child10</div>
-    <div class="stone_wall_child">child11</div>
-    <div class="stone_wall_child">child12</div>
-    <div class="stone_wall_child">child13</div>
-    <div class="stone_wall_child">child14</div>
-    <div class="stone_wall_child">child15</div>
-    <div class="stone_wall_child">child16</div>
-    <div class="stone_wall_child">child17</div>
-    <div class="stone_wall_child">child18</div>
-    <div class="stone_wall_child">child19</div>
-    <div class="stone_wall_child">child20</div>
-  </div>
+  <div id="controller">
+   <div class="controll">
+    <label for="order">order:</label>
+    <select name="order" id="order">
+      <option value="left">left</option>
+      <option value="top">top</option>
+      <option value="level">level</option>
+    </select>
+    </div>
+     <div class="controll">
+    <label for="columns">columns:</label>
+    <select name="columns" id="columns">
+      <option value="2">2</option>
+      <option value="3" selected>3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+    </select>
+    </div>
+ </div>
+
+  <div class="stone_wall"></div>
   <script>
+    let sw_area = document.getElementsByClassName('stone_wall')[0];
+    const num_child = 20;
+    
     window.addEventListener('load',function(){
-      var sw = new StoneWall('stone_wall',{
-        order: 'top',
-        columns:3
-      });
+      preparation();
+      new_start('top',3);
     },false);
+    console.log(document.getElementById('controller'));
+    
+    document.getElementById('order').addEventListener('change',function(){
+      rearrange(new_start);
+    });
+    
+    document.getElementById('columns').addEventListener('change',function(){
+      rearrange(new_start);
+    });
+    
+    function new_start(){
+      let new_order = document.getElementById('order').value;
+      let new_columns = Number(document.getElementById('columns').value);
+      var sw = new StoneWall('stone_wall',{
+        order: new_order,
+        columns: new_columns
+      });
+    }
+    
+    function rearrange(callback){
+      let sw_columns = document.getElementsByClassName('stone_wall_column');
+      let arr = [];
+      let count = 0;
+      Array.prototype.forEach.call(sw_columns,function(sw_column){
+        Array.prototype.forEach.call(sw_column.children,function(sw_child){
+          arr[count] = {};
+          arr[count].id = sw_child.dataset.num;
+          arr[count].el = sw_child;
+          count++;
+        });
+      });
+      sw_area.innerHTML = '';
+      arr.sort(function(a,b){
+        return a.id - b.id;
+      });
+      arr.forEach(function(arg){
+        sw_area.appendChild(arg.el);
+      });
+      callback();
+    }
+    
+    function preparation(){
+      for(var i=1;i<=num_child;i++){
+        let child = document.createElement('div');
+        child.setAttribute('class', 'stone_wall_child');
+        child.setAttribute('data-num', i);
+        let text = document.createTextNode('child'+i);
+        child.appendChild(text);
+        child.style.height = Math.random()*300+100+'px';
+        child.style.backgroundColor = random_hsl();
+        sw_area.appendChild(child);
+      }
+    }
 
     let StoneWall = function(class_name,prop){
       prop = prop || {};
@@ -63,6 +141,7 @@
       const sw_boxs = document.getElementsByClassName(target);
       const columns = prop.columns || 3;
       const order = prop.order || 'left';
+      
       Array.prototype.forEach.call(sw_boxs,function(sw_box){
         for(let i=0;i<columns;i++){
           let sw_column = document.createElement('div');
@@ -73,24 +152,47 @@
         let sw_columns = sw_box.getElementsByClassName(target + '_column')
         let sw_children = sw_box.getElementsByClassName(target + '_child');
         let now_column = 0;
-        let length = sw_box.children.length;
-
+        let num_contents = sw_children.length;
+        let now_height;
+        
         switch(order){
+          case 'level':
+            let height_map =[];
+            for(let i=0;i<num_contents;i++){
+              height_map[i] = {};
+              height_map[i].id = i;
+              height_map[i].el = sw_children[i];
+              height_map[i].height = sw_children[i].clientHeight;
+            }
+            height_map.sort(function(a,b){
+              return b.height - a.height;
+            });
+
+            now_height = new Array(columns);
+            for(let i=0;i<now_height.length;i++){now_height[i] = 0;}
+            for(let i=0;i<num_contents;i++){
+              let column_num = index_min(now_height);
+              now_height[column_num] += height_map[i].height;
+              height_map[i].column = column_num;
+            }
+            height_map.sort(function(a,b){
+              return a.id - b.id;
+            });
+            for(let i=0;i<num_contents;i++){
+              sw_columns[height_map[i].column].appendChild(height_map[i].el);
+            }
+            break;
           case 'left':
             Array.prototype.forEach.call(sw_children,function(sw_child){
-              sw_child.style.height = Math.random()*300+100+'px'; //for demo
-              sw_child.style.backgroundColor = random_hsl(); //for demo
               sw_columns[now_column].appendChild(sw_child);
               (now_column>=columns-1)?now_column=0:now_column++;
             });
             break;
           case 'top':
-            let now_height = new Array(columns);
+            now_height = new Array(columns);
             for(let i=0;i<now_height.length;i++){now_height[i] = 0;}
             Array.prototype.forEach.call(sw_children,function(sw_child){
               let column_num = index_min(now_height);
-              sw_child.style.height = Math.random()*300+100+'px'; //for demo
-              sw_child.style.backgroundColor = random_hsl(); //for demo
               sw_columns[column_num].appendChild(sw_child);
               now_height[column_num] = sw_columns[column_num].clientHeight;
             });
